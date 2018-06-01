@@ -1,49 +1,79 @@
 package edu.eiu.tourist_app;
 
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
 
-public class TouristRecyclerAdapter extends RecyclerView.Adapter<TouristRecyclerAdapter.TouristViewHolder> {
-    private List<String> items;
+import edu.eiu.tourist_app.datamodel.WikipediaPage;
 
-    public TouristRecyclerAdapter (List<String> items) {
-        this.items = items;
+public class TouristRecyclerAdapter extends RecyclerView.Adapter<TouristRecyclerAdapter.TouristHolder> {
+    private List<WikipediaPage> touristSites;
+
+    public TouristRecyclerAdapter(List<WikipediaPage> touristSites) {
+        this.touristSites = touristSites;
     }
 
     @NonNull
     @Override
-    public TouristViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        TextView v = (TextView) LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
-        TouristViewHolder viewHolder = new TouristViewHolder(v);
+    public TouristHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        ConstraintLayout v = (ConstraintLayout) inflater.inflate(R.layout.tourist_list_item, parent, false);
+        TouristHolder viewHolder = new TouristHolder(v);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TouristViewHolder holder, int position) {
-        holder.bindView(items.get(position));
+    public void onBindViewHolder(@NonNull TouristHolder holder, int position) {
+        holder.bindView(touristSites.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return touristSites.size();
     }
 
-    public static class TouristViewHolder extends RecyclerView.ViewHolder {
+    public static class TouristHolder extends RecyclerView.ViewHolder {
 
+        private ConstraintLayout view;
         private TextView textView;
+        private ImageView imageView;
 
-        public TouristViewHolder(TextView textView) {
-            super(textView);
-            this.textView = textView;
+        public TouristHolder(View itemView) {
+            super(itemView);
+            this.view = (ConstraintLayout) itemView;
+            this.textView = view.findViewById(R.id.textView);
+            this.imageView = view.findViewById(R.id.imageView);
         }
 
-        private void bindView(String itemText) {
-            textView.setText(itemText);
+        private void bindView(WikipediaPage touristItem) {
+            textView.setText(touristItem.getTitle());
+            if (touristItem.getThumbnail() != null
+                    && !TextUtils.isEmpty(touristItem.getThumbnail().getSource())) {
+                Glide.with(view)
+                        .load(touristItem.getThumbnail().getSource())
+                        .apply(RequestOptions.circleCropTransform()
+                                .error(android.R.drawable.stat_notify_error)
+                                .placeholder(android.R.drawable.btn_star))
+                        .into(this.imageView);
+            } else {
+                Glide.with(view)
+                        .load(R.drawable.image_error)
+                        .apply(RequestOptions.circleCropTransform()
+                                .error(android.R.drawable.stat_notify_error)
+                                .placeholder(android.R.drawable.btn_star))
+                        .into(this.imageView);
+            }
         }
     }
 
